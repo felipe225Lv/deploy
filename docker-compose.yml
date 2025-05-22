@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: backend_goldeneggs
+    ports:
+      - "6001:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://goldeneggs_database:3306/goldeneggs
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=2210
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+    networks:
+      - goldeneggs_net
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_goldeneggs
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 2210
+      MYSQL_DATABASE: goldeneggs
+    ports:
+      - "6002:3306"
+    volumes:
+      - ./Config/mysql:/var/lib/mysql
+    hostname: goldeneggs_database
+    networks:
+      - goldeneggs_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p2210"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  adminer:
+    image: adminer
+    container_name: adminer_goldeneggs
+    restart: always
+    ports:
+      - "6003:8080"
+    networks:
+      - goldeneggs_net
+
+  proxy:
+    build:
+      context: .   # la raíz de tu proyecto
+      dockerfile: nginx/Dockerfile
+    container_name: nginx_goldeneggs
+    ports:
+      - "6010:80"
+    depends_on:
+      - backend
+    networks:
+      - goldeneggs_net
+
+networks:
+  goldeneggs_net:
+    driver: bridge
