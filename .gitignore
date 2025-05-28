@@ -1,6 +1,8 @@
 /Config/
 /frontent/
 /backend/
+.frontent/
+.backend/
 
 # IntelliJ config
 /.idea/
